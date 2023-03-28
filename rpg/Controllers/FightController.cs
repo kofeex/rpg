@@ -19,25 +19,53 @@ namespace rpg.Controllers
         [HttpPost("Weapon")]
         public async Task<ActionResult<ServiceResponse<AttackResultDto>>> WeaponAttack(WeaponAttackDto request)
         {
-            return Ok(await _fightService.WeaponAttack(request));
+            var response = await _fightService.WeaponAttack(request);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<AttackResultDto>>> SkillAttack(SkillAttackDto request)
         {
-            return Ok(await _fightService.SkillAttack(request));
+            var response = await _fightService.SkillAttack(request);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost("Fight")]
         public async Task<ActionResult<ServiceResponse<FightResultDto>>> Fight(FightRequestDto request)
         {
-            return Ok(await _fightService.Fight(request));
+            var response = await _fightService.Fight(request);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet]
         public async Task<ActionResult<ServiceResponse<List<HighscoreDto>>>> GetHighscore()
         {
-            return Ok(await _fightService.GetHighscore());
+            var response = await _fightService.GetHighscore();
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
     }
 }

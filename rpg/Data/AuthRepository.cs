@@ -22,7 +22,7 @@ namespace rpg.Data
             var serviceResponse = new ServiceResponse<string>();
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower().Equals(username.ToLower()));
 
-            if (user is null)
+            if (user == null)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = "User not found.";
@@ -42,12 +42,12 @@ namespace rpg.Data
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
-            var response = new ServiceResponse<int>();
+            var serviceResponse = new ServiceResponse<int>();
             if(await UserExists(user.Username))
             {
-                response.Success = false;
-                response.Message = "User already exists.";
-                return response;
+                serviceResponse.Success = false;
+                serviceResponse.Message = "User already exists.";
+                return serviceResponse;
             }
 
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -57,8 +57,9 @@ namespace rpg.Data
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            response.Data = user.Id;
-            return response;
+            serviceResponse.Data = user.Id;
+
+            return serviceResponse;
         }
 
         public async Task<bool> UserExists(string username)
@@ -98,14 +99,14 @@ namespace rpg.Data
 
             var appSettingsToken = _configuration.GetSection("AppSettings:Token").Value;
 
-            if (appSettingsToken is null)
+            if (appSettingsToken == null)
             {
                 throw new Exception("AppSettings token is null");
             }
             
-            SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(appSettingsToken));
+            SymmetricSecurityKey key = new(System.Text.Encoding.UTF8.GetBytes(appSettingsToken));
 
-            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            SigningCredentials creds = new(key, SecurityAlgorithms.HmacSha512Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -114,7 +115,7 @@ namespace rpg.Data
                 SigningCredentials = creds
             };
 
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            JwtSecurityTokenHandler tokenHandler = new();
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
 
              return tokenHandler.WriteToken(token);

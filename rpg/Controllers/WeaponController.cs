@@ -21,7 +21,14 @@ namespace rpg.Controllers
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<GetCharacterDto>>> AddWeapon(AddWeaponDto newWeapon)
         {
-            return Ok(await _weaponService.AddWeapon(newWeapon));
+            var response = await _weaponService.AddWeapon(newWeapon);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
     }
 }

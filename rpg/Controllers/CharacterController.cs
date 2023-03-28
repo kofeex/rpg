@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using rpg.Dtos.Character;
 using rpg.Models;
 using rpg.Services.CharacterService;
-using System.Security.Claims;
 
 namespace rpg.Controllers
 {
@@ -23,29 +22,52 @@ namespace rpg.Controllers
         [HttpGet("GetAll")]
         public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> Get()
         {
-            return Ok(await _characterService.GetAllCharacters());
+            var response = await _characterService.GetAllCharacters();
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceResponse<GetCharacterDto>>> GetSingle(int id)
         {
-            return Ok(await _characterService.GetCharacterById(id));
+            var response = await _characterService.GetCharacterById(id);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> AddCharacter(AddCharacterDto newCharacter)
-        { 
-            return Ok(await _characterService.AddCharacter(newCharacter));
+        {
+            var response = await _characterService.AddCharacter(newCharacter);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
 
         [HttpPut]
         public async Task<ActionResult<ServiceResponse<GetCharacterDto>>> UpdateCharacter(UpdateCharacterDto updatedCharacter)
         {
             var response = await _characterService.UpdateCharacter(updatedCharacter);
-            if (response.Data is null) 
+
+            if (response.Data == null) 
             {
                 return NotFound(response);
             }
+
             return Ok(response);
         }
 
@@ -53,17 +75,26 @@ namespace rpg.Controllers
         public async Task<ActionResult<ServiceResponse<GetCharacterDto>>> DeleteCharacter(int id)
         {
             var response = await _characterService.DeleteCharacter(id);
-            if (response.Data is null)
+
+            if (response.Data == null)
             {
                 return NotFound(response);
             }
+
             return Ok(response);
         }
 
         [HttpPost("Skill")]
         public async Task<ActionResult<ServiceResponse<GetCharacterDto>>> AddCharacterSkill(AddCharacterSkillDto newCharacterSkill)
         {
-            return Ok(await _characterService.AddCharacterSkill(newCharacterSkill));
+            var response = await _characterService.AddCharacterSkill(newCharacterSkill);
+
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
     }
 }

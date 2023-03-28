@@ -17,9 +17,12 @@ namespace rpg.Services.FightService
             _mapper = mapper;
         }
 
+
+        /* Method where selected characters fight automatically.
+         Winner is the character that deliveres the finishing blow to an opponent who becomes the loser */
         public async Task<ServiceResponse<FightResultDto>> Fight(FightRequestDto request)
         {
-            var response = new ServiceResponse<FightResultDto>
+            var serviceResponse = new ServiceResponse<FightResultDto>
             {
                 Data = new FightResultDto()
             };
@@ -42,15 +45,15 @@ namespace rpg.Services.FightService
                         var opponent = opponents[new Random().Next(opponents.Count)];
 
                         int damage = 0;
-                        string  attackUsed = string.Empty;
+                        string attackUsed = string.Empty;
 
                         bool useWeapon = new Random().Next(2) == 0;
-                        if (useWeapon && attacker.Weapon is not null)
+                        if (useWeapon && attacker.Weapon != null)
                         {
                             attackUsed = attacker.Weapon.Name;
                             damage = DoWeaponAttack(attacker, opponent);
                         }
-                        else if (!useWeapon && attacker.Skills is not null)
+                        else if (!useWeapon && attacker.Skills != null)
                         {
                             var skill = attacker.Skills[new Random().Next(attacker.Skills.Count)];
                             attackUsed = skill.Name;
@@ -58,11 +61,11 @@ namespace rpg.Services.FightService
                         }
                         else
                         {
-                            response.Data.Log.Add($"{attacker.Name} wasn't able to attack!");
+                            serviceResponse.Data.Log.Add($"{attacker.Name} wasn't able to attack!");
                             continue;
                         }
 
-                        response.Data.Log
+                        serviceResponse.Data.Log
                             .Add($"{attacker.Name} attacks {opponent.Name} using {attackUsed} with {(damage >= 0 ? damage : 0)} damage");
 
                         if (opponent.HitPoints <= 0)
@@ -70,8 +73,8 @@ namespace rpg.Services.FightService
                             defeated = true;
                             attacker.Victories++;
                             opponent.Defeats++;
-                            response.Data.Log.Add($"{opponent.Name} has been defeated");
-                            response.Data.Log.Add($"{attacker.Name} wins with {attacker.HitPoints} HP left!");
+                            serviceResponse.Data.Log.Add($"{opponent.Name} has been defeated");
+                            serviceResponse.Data.Log.Add($"{attacker.Name} wins with {attacker.HitPoints} HP left!");
                             break;
                         }
                     }
@@ -87,16 +90,16 @@ namespace rpg.Services.FightService
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
             }
 
-            return response;
+            return serviceResponse;
         }
 
         public async Task<ServiceResponse<AttackResultDto>> SkillAttack(SkillAttackDto request)
         {
-            var response = new ServiceResponse<AttackResultDto>();
+            var serviceResponse = new ServiceResponse<AttackResultDto>();
 
             try
             {
@@ -107,30 +110,30 @@ namespace rpg.Services.FightService
                 var opponent = await _context.Characters
                     .FirstOrDefaultAsync(c => c.Id == request.OpponentId);
 
-                if (attacker is null || opponent is null || attacker.Skills is null)
+                if (attacker == null || opponent == null || attacker.Skills == null)
                 {
                     throw new Exception("Something fishy is going on");
                 }
 
                 var skill = attacker.Skills.FirstOrDefault(s => s.Id == request.SkillId);
 
-                if (skill is null)
+                if (skill == null)
                 {
-                    response.Success = false;
-                    response.Message = $"{attacker.Name} doesn't know that skill!";
-                    return response;
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = $"{attacker.Name} doesn't know that skill!";
+                    return serviceResponse;
                 }
 
                 int damage = DoSkillAttack(attacker, opponent, skill);
 
                 if (opponent.HitPoints <= 0)
                 {
-                    response.Message = $"{opponent.Name} has been defeated!";
+                    serviceResponse.Message = $"{opponent.Name} has been defeated!";
                 }
 
                 await _context.SaveChangesAsync();
 
-                response.Data = new AttackResultDto
+                serviceResponse.Data = new AttackResultDto
                 {
                     Attacker = attacker.Name,
                     Opponent = opponent.Name,
@@ -141,11 +144,11 @@ namespace rpg.Services.FightService
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
             }
 
-            return response;
+            return serviceResponse;
         }
 
         private static int DoSkillAttack(Character attacker, Character opponent, Skill skill)
@@ -163,7 +166,7 @@ namespace rpg.Services.FightService
 
         public async Task<ServiceResponse<AttackResultDto>> WeaponAttack(WeaponAttackDto request)
         {
-            var response = new ServiceResponse<AttackResultDto>();
+            var serviceResponse = new ServiceResponse<AttackResultDto>();
 
             try
             {
@@ -174,7 +177,7 @@ namespace rpg.Services.FightService
                 var opponent = await _context.Characters
                     .FirstOrDefaultAsync(c => c.Id == request.OpponentId);
 
-                if (attacker is null || opponent is null || attacker.Weapon is null)
+                if (attacker == null || opponent == null || attacker.Weapon == null)
                 {
                     throw new Exception("Something fishy is going on");
                 }
@@ -183,12 +186,12 @@ namespace rpg.Services.FightService
 
                 if (opponent.HitPoints <= 0)
                 {
-                    response.Message = $"{opponent.Name} has been defeated!";
+                    serviceResponse.Message = $"{opponent.Name} has been defeated!";
                 }
 
                 await _context.SaveChangesAsync();
 
-                response.Data = new AttackResultDto
+                serviceResponse.Data = new AttackResultDto
                 {
                     Attacker = attacker.Name,
                     Opponent = opponent.Name,
@@ -199,16 +202,16 @@ namespace rpg.Services.FightService
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
             }
 
-            return response;
+            return serviceResponse;
         }
 
         private static int DoWeaponAttack(Character attacker, Character opponent)
         {
-            if (attacker.Weapon is null)
+            if (attacker.Weapon == null)
             {
                 throw new Exception("Attacker has no weapon!");
             }

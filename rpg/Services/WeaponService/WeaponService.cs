@@ -21,22 +21,23 @@ namespace rpg.Services.WeaponService
             _mapper = mapper;
         }
 
+        private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext!.User
+            .FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         public async Task<ServiceResponse<GetCharacterDto>> AddWeapon(AddWeaponDto newWeapon)
         {
-            var response = new ServiceResponse<GetCharacterDto>();
+            var serviceResponse = new ServiceResponse<GetCharacterDto>();
 
             try
             {
                 var character = await _context.Characters
-                    .FirstOrDefaultAsync(c => c.Id == newWeapon.CharacterId &&
-                                            c.User!.Id == int.Parse(_httpContextAccessor.HttpContext!.User
-                                            .FindFirstValue(ClaimTypes.NameIdentifier)!));
+                    .FirstOrDefaultAsync(c => c.Id == newWeapon.CharacterId && c.User!.Id == GetUserId());
 
                 if (character == null)
                 {
-                    response.Success = false;
-                    response.Message = "Character not found!";
-                    return response;
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Character not found!";
+                    return serviceResponse;
                 }
 
                 var weapon = new Weapon
@@ -49,15 +50,15 @@ namespace rpg.Services.WeaponService
                 _context.Weapons.Add(weapon);
                 await _context.SaveChangesAsync();
 
-                response.Data = _mapper.Map<GetCharacterDto>(character);
+                serviceResponse.Data = _mapper.Map<GetCharacterDto>(character);
             } 
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = ex.Message;
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
             }
 
-            return response;
+            return serviceResponse;
         }
     }
 }
